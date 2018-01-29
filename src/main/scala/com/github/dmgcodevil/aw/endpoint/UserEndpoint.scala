@@ -1,24 +1,23 @@
 package com.github.dmgcodevil.aw.endpoint
 
-/**
-  * Created by dmgcodevil on 1/27/2018.
-  */
+
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server.Directives._
 import akka.stream.Materializer
 import com.github.dmgcodevil.aw.endpoint.json.JsonSupport
-import com.github.dmgcodevil.aw.endpoint.request.{DeleteByIdRequest, FindByIdRequest}
 import com.github.dmgcodevil.aw.endpoint.request.user.{CreateUserRequest, UpdateUserRequest}
-import com.github.dmgcodevil.aw.endpoint.resource.{UserResource, UserResourceFactory}
+import com.github.dmgcodevil.aw.endpoint.request.HexString
+import com.github.dmgcodevil.aw.endpoint.resource.UserResourceFactory
 import com.github.dmgcodevil.aw.repo.UserRepository
+import com.github.dmgcodevil.aw.util.BsonConversions._
 
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
+
 
 trait UserEndpoint extends JsonSupport {
-  implicit val mat:Materializer
+  implicit val mat: Materializer
   implicit val ec: ExecutionContext
 
   val repository: UserRepository
@@ -26,10 +25,10 @@ trait UserEndpoint extends JsonSupport {
   val userRoute = {
     pathPrefix("api" / "users") {
       get {
-        path(Segment).as(FindByIdRequest) { request =>
+        path(Segment).as(HexString) { id =>
           complete {
             repository
-              .findById(request.id)
+              .findById(id.value)
               .map { optionalUser => optionalUser.map { UserResourceFactory.create } }
               .flatMap {
                 case None => Future.successful(HttpResponse(status = StatusCodes.NotFound))
@@ -37,20 +36,21 @@ trait UserEndpoint extends JsonSupport {
               }
           }
         }
-      } ~put {
-        path(Segment) {
+      } ~ put {
+        path(Segment).as(HexString) {
           id => {
             entity(as[UpdateUserRequest]) {
-              u => complete {
-                repository.update(u.asDomain(id)).map {
-                  case true => Future.successful(HttpResponse(status = StatusCodes.custom(200, s"user[id=$id] has been updated")))
-                  case false => Future.successful(HttpResponse(status = StatusCodes.NotFound))
+              request =>
+                complete {
+                  repository.update(request.asDomain(id.value)).map {
+                    case true => Future.successful(HttpResponse(status = StatusCodes.custom(200, s"user[id=$id] has been updated")))
+                    case false => Future.successful(HttpResponse(status = StatusCodes.NotFound))
+                  }
                 }
-              }
             }
           }
         }
-      } ~post {
+      } ~ post {
         entity(as[CreateUserRequest]) { user =>
           complete {
             repository
@@ -60,13 +60,13 @@ trait UserEndpoint extends JsonSupport {
               }
           }
         }
-      } ~delete {
-        path(Segment).as(DeleteByIdRequest) {
-          request => {
+      } ~ delete {
+        path(Segment).as(HexString) {
+          id => {
             complete {
-              repository.deleteById(request.id)
+              repository.deleteById(id.value)
                 .map {
-                  case true => Future.successful(HttpResponse(status = StatusCodes.custom(200, s"user[id=${request.id}] has been deleted")))
+                  case true => Future.successful(HttpResponse(status = StatusCodes.custom(200, s"user[id=${id.value}] has been deleted")))
                   case false => Future.successful(HttpResponse(status = StatusCodes.NotFound))
                 }
             }

@@ -5,6 +5,8 @@ import org.bson.codecs.{Codec, DecoderContext, EncoderContext}
 import org.bson.{BsonReader, BsonWriter}
 
 /**
+  * BSON codec to serialize/deserialize user to/from BSON.
+  *
   * Created by dmgcodevil on 1/26/2018.
   */
 class UserCodec extends Codec[User] {

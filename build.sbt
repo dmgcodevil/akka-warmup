@@ -6,6 +6,7 @@ scalaVersion := "2.12.1"
 
 val akkaHttp = "10.0.11"
 val akka = "2.4.19"
+mainClass in Compile := Some("com.github.dmgcodevil.aw.Application")
 
 libraryDependencies ++= Seq(
   // akka dependencies
@@ -28,3 +29,12 @@ testOptions in Test ++= Seq(
   Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
   Tests.Argument(TestFrameworks.ScalaTest, "-h", "target/test-reports")
 )
+
+
+
+
+// META-INF discarding
+//assemblyMergeStrategy in assembly := {
+//  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+//  case x => MergeStrategy.first
+//}

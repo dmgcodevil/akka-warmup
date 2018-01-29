@@ -4,6 +4,8 @@ import com.github.dmgcodevil.aw.entity.User
 import org.bson.types.ObjectId
 
 /**
+  * Request to create new user.
+  *
   * Created by dmgcodevil on 1/27/2018.
   */
 final case class CreateUserRequest(name: String, email: String) {

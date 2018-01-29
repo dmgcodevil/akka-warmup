@@ -10,6 +10,9 @@ import scala.concurrent.duration.Duration
 
 import org.mongodb.scala._
 
+/**
+  * Use only for testing purposes.
+  */
 object Helpers {
 
   implicit class DocumentObservable[C](val observable: Observable[Document]) extends ImplicitObservable[Document] {

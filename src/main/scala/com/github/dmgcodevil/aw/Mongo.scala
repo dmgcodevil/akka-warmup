@@ -6,7 +6,9 @@ import com.mongodb.ConnectionString
 import com.typesafe.config.ConfigFactory
 import org.bson.codecs.configuration.CodecRegistries
 import org.mongodb.scala.connection.ClusterSettings
-import org.mongodb.scala.{MongoClient, MongoClientSettings, MongoCollection, MongoDatabase}
+import org.mongodb.scala.model.IndexOptions
+import org.mongodb.scala.model.Sorts._
+import org.mongodb.scala.{MongoClient, MongoClientSettings, MongoCollection, MongoDatabase, Observable}
 
 /**
   * Created by dmgcodevil on 1/27/2018.
@@ -20,4 +22,11 @@ object Mongo {
 
   lazy val database: MongoDatabase = mongoClient.getDatabase(config.getString("mongo.database"))
   lazy val userCollection: MongoCollection[User] = database.getCollection("users")
+
+  def createUserCollectionIndexes(): Observable[Seq[String]] = {
+    for {
+      nameIndex <- userCollection.createIndex(ascending("name"), new IndexOptions().unique(true) )
+      emailIndex <- userCollection.createIndex(ascending("email"), new IndexOptions().unique(true))
+    } yield Seq(nameIndex, emailIndex)
+  }
 }
